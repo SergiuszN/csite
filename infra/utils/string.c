@@ -3,7 +3,7 @@
 
 struct String {
   char* data;
-  __int32_t length;
+  int32_t length;
 };
 
 struct String* string_new(char data[]) {
