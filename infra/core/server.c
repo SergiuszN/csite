@@ -13,9 +13,9 @@ struct Request {
 };
 
 struct Response {
-    char *statusCode;
-    char *redirectUri;
-    char *body;
+    struct String statusCode;
+    struct String redirectUri;
+    struct String body;
 };
 
 void server_init() {
