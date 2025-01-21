@@ -4,20 +4,6 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-struct Request {
-    char *method;
-    char *path;
-    char *contentType;
-    char *cookies;
-    char *body;
-};
-
-struct Response {
-    char *statusCode;
-    char *redirectUri;
-    char *body;
-};
-
 void server_init() {
     int server_fd, client_fd;
     struct sockaddr_in server_addr, client_addr;
@@ -38,7 +24,7 @@ void server_init() {
     server_addr.sin_port = htons(PORT);
 
     // Bind socket
-    if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+    if (bind(server_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
         perror("Bind failed");
         return;
     }
@@ -53,7 +39,7 @@ void server_init() {
 
     while (1) {
         // Accept connection
-        client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
+        client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_len);
         if (client_fd < 0) {
             perror("Accept failed");
             continue;
@@ -64,16 +50,29 @@ void server_init() {
         read(client_fd, buffer, BUFFER_SIZE - 1);
         printf("Received request:\n%s\n", buffer);
 
-        // Prepare and send response
-        const char *response = "HTTP/1.1 200 OK\r\n"
-                             "Content-Type: text/html\r\n"
-                             "Content-Length: 13\r\n"
-                             "\r\n"
-                             "Hello, World!";
+        // TODO: create request struct from request
+        // TODO: execute router with request
 
-        write(client_fd, response, strlen(response));
+        // TODO: replace that with getting response from router
+        struct Response *_response = response_ok(string_new("<html><body><h1>Hello</h1></body></html>"));
 
-        // Close client connection
+        char length[10];
+        sprintf(length, "%d", _response->body->length);
+
+        struct String *_responseString = string_new("HTTP/1.1 ");
+        string_append(_responseString, _response->statusCode->data);
+        string_append(_responseString, "\r\nContent-Type: text/html\r\nContent-Length: ");
+        string_append(_responseString, length);
+        string_append(_responseString, "\r\n\r\n");
+        string_append(_responseString, _response->body->data);
+
+        printf("%s\n\n", _responseString->data);
+        write(client_fd, _responseString->data, _responseString->length);
+
+
+        // Free & Close client connection
+        string_free(_responseString);
+        response_free(_response);
         close(client_fd);
     }
 
