@@ -13,9 +13,9 @@ struct Request {
 };
 
 struct Response {
-    struct String statusCode;
-    struct String redirectUri;
-    struct String body;
+    struct String *statusCode;
+    struct String *redirectUri;
+    struct String *body;
 };
 
 void server_init() {
@@ -64,14 +64,22 @@ void server_init() {
         read(client_fd, buffer, BUFFER_SIZE - 1);
         printf("Received request:\n%s\n", buffer);
 
-        // Prepare and send response
-        const char *response = "HTTP/1.1 200 OK\r\n"
-                             "Content-Type: text/html\r\n"
-                             "Content-Length: 13\r\n"
-                             "\r\n"
-                             "Hello, World!";
+        struct Response *_response = malloc(sizeof(struct Response));
+        _response->statusCode = string_new("200");
+        _response->redirectUri = string_new("");
+        _response->body = string_new("<html><body><h1>Hello</h1></body></html>");
 
-        write(client_fd, response, strlen(response));
+        char *responseBuffer = malloc(sizeof (char) * (_response->body->length + RESPONSE_HEADER_SIZE));
+
+        // Prepare and send response
+        sprintf(responseBuffer, "HTTP/1.1 %s\r\n"
+                             "Content-Type: text/html\r\n"
+                             "Content-Length: %d\r\n"
+                             "\r\n"
+                             "%s", _response->statusCode->data, _response->body->length, _response->body->data);
+
+        printf("%s\n\n", responseBuffer);
+        write(client_fd, responseBuffer, strlen(responseBuffer));
 
         // Close client connection
         close(client_fd);
