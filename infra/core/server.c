@@ -3,6 +3,17 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+String *server_prepare_response(const Response *response) {
+    String *responseString = string_new("HTTP/1.1 ");
+    string_append(responseString, response->statusCode->data);
+    string_append(responseString, "\r\nContent-Type: text/html\r\nContent-Length: ");
+    string_append(responseString, number_to_string(response->body->length));
+    string_append(responseString, "\r\n\r\n");
+    string_append(responseString, response->body->data);
+
+    return responseString;
+}
+
 void server_init() {
     int server_fd, client_fd;
     struct sockaddr_in server_addr, client_addr;
@@ -65,21 +76,15 @@ void server_init() {
         string_list_free(requestRows);
 
         // TODO: replace that with getting response from router
-        Response *_response = response_ok(string_new("<html><body><h1>Hello</h1></body></html>"));
+        Response *response = response_ok(string_new("<html><body><h1>Hello</h1></body></html>"));
 
-        String *_responseString = string_new("HTTP/1.1 ");
-        string_append(_responseString, _response->statusCode->data);
-        string_append(_responseString, "\r\nContent-Type: text/html\r\nContent-Length: ");
-        string_append(_responseString, number_to_string(_response->body->length));
-        string_append(_responseString, "\r\n\r\n");
-        string_append(_responseString, _response->body->data);
-
-        printf("Response: %s\n\n", _responseString->data);
-        write(client_fd, _responseString->data, _responseString->length);
+        String *responseString = server_prepare_response(response);
+        printf("Response: %s\n\n", responseString->data);
+        write(client_fd, responseString->data, responseString->length);
 
         // Free response memory
-        string_free(_responseString);
-        response_free(_response);
+        string_free(responseString);
+        response_free(response);
 
         // Close client connection
         close(client_fd);
