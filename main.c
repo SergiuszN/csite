@@ -11,7 +11,10 @@
 #define BUFFER_SIZE 1024
 
 // Utils ---------------------------------------------------------------------------------------------------------------
+#include "infra/utils/list.c"
+#include "infra/utils/number.c"
 #include "infra/utils/string.c"
+#include "infra/utils/hashmap.c"
 
 // Infra ---------------------------------------------------------------------------------------------------------------
 #include "infra/core/request_response.c"

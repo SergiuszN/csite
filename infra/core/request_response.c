@@ -1,14 +1,14 @@
 // Request ----------------------------------------------------------------------------------------------------
 
-struct Request {
-    struct String *method;
-    struct String *path;
-    struct String *contentType;
-    struct String *cookies;
-    struct String *body;
-};
+typedef struct Request {
+    String *method;
+    String *path;
+    String *contentType;
+    String *cookies;
+    String *body;
+} Request;
 
-void request_free(struct Request *request) {
+void request_free(Request *request) {
     string_free(request->method);
     string_free(request->path);
     string_free(request->contentType);
@@ -17,8 +17,8 @@ void request_free(struct Request *request) {
     free(request);
 }
 
-struct Request* request_new(struct String *method, struct String *path, struct String *contentType, struct String *cookies, struct String *body) {
-    struct Request *_request = malloc(sizeof(struct Request));
+Request *request_new(String *method, String *path, String *contentType, String *cookies, String *body) {
+    Request *_request = malloc(sizeof(Request));
     _request->method = method;
     _request->path = path;
     _request->contentType = contentType;
@@ -30,21 +30,21 @@ struct Request* request_new(struct String *method, struct String *path, struct S
 
 // Response ----------------------------------------------------------------------------------------------------
 
-struct Response {
-    struct String *statusCode;
-    struct String *redirectUri;
-    struct String *body;
-};
+typedef struct Response {
+    String *statusCode;
+    String *redirectUri;
+    String *body;
+} Response;
 
-void response_free(struct Response *response) {
+void response_free(Response *response) {
     string_free(response->statusCode);
     string_free(response->redirectUri);
     string_free(response->body);
     free(response);
 }
 
-struct Response* response_new(struct String *statusCode, struct String *redirectUri, struct String *body) {
-    struct Response *_response = malloc(sizeof(struct Response));
+Response *response_new(String *statusCode, String *redirectUri, String *body) {
+    Response *_response = malloc(sizeof(Response));
     _response->statusCode = statusCode;
     _response->redirectUri = redirectUri;
     _response->body = body;
@@ -52,8 +52,8 @@ struct Response* response_new(struct String *statusCode, struct String *redirect
     return _response;
 }
 
-struct Response* response_ok(struct String *body) {
-    struct Response *_response = malloc(sizeof(struct Response));
+Response *response_ok(String *body) {
+    Response *_response = malloc(sizeof(Response));
     _response->statusCode = string_new("200 OK");
     _response->redirectUri = string_new("");
     _response->body = body;
@@ -61,8 +61,8 @@ struct Response* response_ok(struct String *body) {
     return _response;
 }
 
-struct Response* response_not_found() {
-    struct Response *_response = malloc(sizeof(struct Response));
+Response *response_not_found() {
+    Response *_response = malloc(sizeof(Response));
     _response->statusCode = string_new("404 Not Found");
     _response->redirectUri = string_new("");
     _response->body = string_new("");
@@ -70,8 +70,8 @@ struct Response* response_not_found() {
     return _response;
 }
 
-struct Response* response_redirect(struct String *redirectUri) {
-    struct Response *_response = malloc(sizeof(struct Response));
+Response *response_redirect(String *redirectUri) {
+    Response *_response = malloc(sizeof(Response));
     _response->statusCode = string_new("302");
     _response->redirectUri = redirectUri;
     _response->body = string_new("");

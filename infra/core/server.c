@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -50,29 +49,39 @@ void server_init() {
         read(client_fd, buffer, BUFFER_SIZE - 1);
         printf("Received request:\n%s\n", buffer);
 
+        // Parsing request
+        String *requestData = string_new(buffer);
+        List *requestRows = string_explode(requestData, "\r\n");
+
+        for (int i = 0; i < requestRows->elementSize; i++) {
+            printf("%s | \n", (*(String **) list_get(requestRows, i))->data);
+        }
+
         // TODO: create request struct from request
         // TODO: execute router with request
 
+        // Free memory from request data
+        string_free(requestData);
+        string_list_free(requestRows);
+
         // TODO: replace that with getting response from router
-        struct Response *_response = response_ok(string_new("<html><body><h1>Hello</h1></body></html>"));
+        Response *_response = response_ok(string_new("<html><body><h1>Hello</h1></body></html>"));
 
-        char length[10];
-        sprintf(length, "%d", _response->body->length);
-
-        struct String *_responseString = string_new("HTTP/1.1 ");
+        String *_responseString = string_new("HTTP/1.1 ");
         string_append(_responseString, _response->statusCode->data);
         string_append(_responseString, "\r\nContent-Type: text/html\r\nContent-Length: ");
-        string_append(_responseString, length);
+        string_append(_responseString, number_to_string(_response->body->length));
         string_append(_responseString, "\r\n\r\n");
         string_append(_responseString, _response->body->data);
 
-        printf("%s\n\n", _responseString->data);
+        printf("Response: %s\n\n", _responseString->data);
         write(client_fd, _responseString->data, _responseString->length);
 
-
-        // Free & Close client connection
+        // Free response memory
         string_free(_responseString);
         response_free(_response);
+
+        // Close client connection
         close(client_fd);
     }
 
